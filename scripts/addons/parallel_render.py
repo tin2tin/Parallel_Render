@@ -48,6 +48,7 @@ bl_info = {
 def _can_concatenate(scene):
     return scene.render.is_movie_format
 
+
 class ParallelRenderPanel(bpy.types.Panel):
     """Render the Output from the Sequencer Multithreaded"""
     bl_label = "Parallel Render"
@@ -75,7 +76,6 @@ class ParallelRenderPanel(bpy.types.Panel):
             layout.prop(props, sub_prop)
 
         layout.prop(props, "overwrite")
-        layout.prop(props, "mixdown")
 
         col = layout.column()
         col.prop(props, "concatenate")
@@ -90,6 +90,9 @@ class ParallelRenderPanel(bpy.types.Panel):
             col.enabled = False
             col.use_property_split = False
             col.label(text='Check add-on preferences', icon='ERROR')
+
+        if props.concatenate:
+            layout.prop(props, "mixdown", text="Add Audio")
 
 
 class MessageChannel(object):
@@ -300,7 +303,7 @@ class ParallelRenderPreferences(types.AddonPreferences):
     bl_idname = __name__
 
     ffmpeg_executable: props.StringProperty(
-        name="Path to ffmpeg executable",
+        name="Full path to ffmpeg executable",
         default="",
         update=lambda self, context: self.update(context),
         subtype='FILE_PATH',
@@ -385,17 +388,19 @@ class ParallelRenderPropertyGroup(types.PropertyGroup):
     )
 
     mixdown: props.BoolProperty(
-        name="Mixdown Sound",
+        name="add Sound",
         default=True,
     )
 
     concatenate: props.BoolProperty(
         name="Concatenate Output Files",
         update=lambda self, context: self.update(context),
+        default=True,
     )
 
     clean_up_parts: props.BoolProperty(
         name="Clean Up Partial Files",
+        default=True,
     )
 
     fixed: props.IntProperty(
@@ -499,6 +504,9 @@ class ParallelRender(types.Operator):
     def _render_project_file(self, scn, project_file):
         LOGGER.info("Going to render file %s", project_file)
         self.summary_mutex = Lock()
+
+        preset_codec = bpy.context.scene.render.ffmpeg.audio_codec
+        bpy.context.scene.render.ffmpeg.audio_codec = 'NONE'
 
         props = scn.parallel_render_panel
 
@@ -663,6 +671,8 @@ class ParallelRender(types.Operator):
             for filename in to_clean:
                 os.unlink(filename)
             self.state = ParallelRenderState.RUNNING
+
+        bpy.context.scene.render.ffmpeg.audio_codec = preset_codec
 
     def _run(self, scn):
         props = scn.parallel_render_panel
