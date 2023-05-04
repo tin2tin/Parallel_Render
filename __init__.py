@@ -36,7 +36,7 @@ bl_info = {
     "name": "Parallel Render",
     "author": "Krzysztof Trzciński",
     "version": (1, 0),
-    "blender": (2, 91, 0),
+    "blender": (3, 4, 0),
     "location": "Properties > Parallel Render Panel or Render menu",
     "description": "Render the output from the Sequencer multithreaded",
     "warning": "",
