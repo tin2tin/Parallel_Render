@@ -1,4 +1,4 @@
-# Parallel Render - Speed up rendering
+# Parallel Render - Fast Rendering in Blender
 by Krzysztof Trzciński
 
 [![Build Status](https://travis-ci.com/elmopl/ktba.svg?branch=master)](https://travis-ci.com/elmopl/ktba)
